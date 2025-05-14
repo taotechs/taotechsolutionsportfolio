@@ -1,4 +1,4 @@
- // Initialize AOS
+// Initialize AOS
 AOS.init({
     duration: 800,
     easing: 'ease-in-out',
@@ -7,18 +7,16 @@ AOS.init({
 });
 
 // Navbar scroll effect
-window.addEventListener('scroll', function() {
-    const navbar = document.querySelector('.navbar');
+const navbar = document.querySelector('.navbar');
+window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
-        navbar.style.padding = '0.5rem 0';
-        navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.98)';
+        navbar.classList.add('scrolled');
     } else {
-        navbar.style.padding = '1rem 0';
-        navbar.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        navbar.classList.remove('scrolled');
     }
 });
 
-// Smooth scroll for navigation links
+// Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -32,53 +30,91 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Add active class to nav links on scroll
-window.addEventListener('scroll', function() {
-    const sections = document.querySelectorAll('section');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
+// Active nav link highlighting
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll', () => {
     let current = '';
-    
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
         const sectionHeight = section.clientHeight;
-        if (window.scrollY >= (sectionTop - sectionHeight / 3)) {
+        if (window.scrollY >= (sectionTop - 200)) {
             current = section.getAttribute('id');
         }
     });
-    
-    navLinks.forEach(link => {
+
+    document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
-        if (link.getAttribute('href').substring(1) === current) {
+        if (link.getAttribute('href').slice(1) === current) {
             link.classList.add('active');
         }
     });
 });
 
-// Add loading animation for images
-document.addEventListener('DOMContentLoaded', function() {
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        img.addEventListener('load', function() {
-            this.classList.add('loaded');
+// Form validation
+const contactForm = document.querySelector('#contact-form');
+if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic form validation
+        const name = document.querySelector('#name').value;
+        const email = document.querySelector('#email').value;
+        const message = document.querySelector('#message').value;
+        
+        if (!name || !email || !message) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        // Here you would typically send the form data to your server
+        // For now, we'll just show a success message
+        alert('Thank you for your message! I will get back to you soon.');
+        contactForm.reset();
+    });
+}
+
+// Project filter functionality
+const filterButtons = document.querySelectorAll('.filter-btn');
+const projectCards = document.querySelectorAll('.project-card');
+
+if (filterButtons.length > 0) {
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            const filterValue = button.getAttribute('data-filter');
+            
+            projectCards.forEach(card => {
+                if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'scale(1)';
+                    }, 200);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 200);
+                }
+            });
         });
     });
-});
+}
 
-// Add hover effect for project cards
-const projectCards = document.querySelectorAll('.project-card');
-projectCards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-10px)';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-    });
-});
-
-// Add typing effect for hero section
-const heroTitle = document.querySelector('.hero-section h1');
+// Typing effect for hero section
+const heroTitle = document.querySelector('.hero-title');
 if (heroTitle) {
     const text = heroTitle.textContent;
     heroTitle.textContent = '';
@@ -92,15 +128,23 @@ if (heroTitle) {
         }
     }
     
-    // Start typing effect when page loads
-    window.addEventListener('load', typeWriter);
+    typeWriter();
 }
 
-// Add parallax effect to hero section
-window.addEventListener('scroll', function() {
-    const heroSection = document.querySelector('.hero-section');
-    if (heroSection) {
-        const scrollPosition = window.scrollY;
-        heroSection.style.backgroundPositionY = scrollPosition * 0.5 + 'px';
-    }
+// Lazy loading for images
+document.addEventListener('DOMContentLoaded', function() {
+    const lazyImages = document.querySelectorAll('img[data-src]');
+    
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                observer.unobserve(img);
+            }
+        });
+    });
+    
+    lazyImages.forEach(img => imageObserver.observe(img));
 });
